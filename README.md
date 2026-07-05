@@ -1,127 +1,57 @@
-# Game Design Document (GDD)
+<!-- 1) BANNER -->
+<p align="center">
+  <img src="https://capsule-render.vercel.app/api?type=waving&color=0:7C5CFF,100:B69CFF&height=170&section=header&text=unity-zombie-shooter&fontColor=ffffff&fontSize=44&desc=3D%20zombie%20wave-shooter%20built%20in%20Unity&descAlignY=62&descSize=16&animation=fadeIn" width="100%"/>
+</p>
 
-## Název: Zombie Shooter
+<!-- 2) TYPING SVG -->
+<p align="center">
+  <a href="https://github.com/dyntr">
+    <img src="https://readme-typing-svg.demolab.com?font=JetBrains+Mono&size=18&pause=1000&color=7C5CFF&center=true&vCenter=true&width=680&lines=FPS+movement%2C+raycast+shooting+%26+NavMesh+AI;Clear+the+zombies+to+unlock+the+next+level" alt="typing"/>
+  </a>
+</p>
 
-### Autor: Patrick Dyntr
-### Škola: SPŠE Ječná
-### Předmět: MVH - Závěrečná práce
+<!-- 3) BADGES -->
+<p align="center">
+  <img src="https://img.shields.io/badge/C%23-239120?style=flat-square&logo=csharp&logoColor=white"/>
+  <img src="https://img.shields.io/badge/Unity_2022.3_LTS-000000?style=flat-square&logo=unity&logoColor=white"/>
+  <img src="https://img.shields.io/badge/NavMesh_AI-000000?style=flat-square"/>
+  <img src="https://img.shields.io/badge/TextMeshPro-000000?style=flat-square"/>
+  <img src="https://img.shields.io/badge/status-school%20project-6e7681?style=flat-square"/>
+</p>
 
+## Overview
+
+A first-person 3D zombie shooter built in Unity as a school project: a main menu, two playable levels, and a game-over screen, with NavMesh-driven enemy AI and wave-based level progression.
+
+## ✦ Features
+
+- **First-person controller** — `Rigidbody`-based WASD movement with jump (`Movement.cs`), and mouse-look with pitch clamped to ±90° so the camera can't flip (`PlayerLook.cs`).
+- **Raycast shooting** — `Gun.cs` fires a ray from the camera through the mouse position on left-click, then spawns a physical bullet prefab (`Bullet.cs`) aimed at the hit point, which applies damage on trigger collision and destroys itself on impact.
+- **NavMesh enemy AI** — zombies path to the player every frame via `NavMeshAgent.SetDestination` (`EnemyAI.cs` / `EnemyWalk.cs`), dealing contact damage through `ZombieAttack.cs` and freezing/deactivating on death.
+- **Health system** — both player (`PlayerHealth.cs`) and enemies (`Health.cs`) track HP with a UI `Slider`; the player's death loads the `GameOver` scene, an enemy's death notifies the wave counter.
+- **Wave counter** (`ZombieCounter.cs`, singleton) tracks zombies remaining out of the total for the level and automatically loads the next level once the wave is cleared.
+- **Randomized spawning** — `EnemySpawner.cs` instantiates enemies at a random spawn point on a fixed timer (`InvokeRepeating`).
+- **Main menu** (`MainMenu.cs`) with Start / back-to-menu / quit, unlocking the cursor for menu navigation and locking it back for gameplay.
+- **4 scenes**: `MENU` → `Level1` → `Level2` → `GameOver`.
+
+## 🛠 Built with
+
+C#, Unity 2022.3 LTS, Unity NavMesh AI (`NavMeshAgent`), TextMeshPro (UI), plus third-party Asset Store packs for the skybox and character/environment models.
+
+## 📦 Getting started
+
+Open the project folder in Unity Hub with Unity **2022.3.x**, open the `MENU` scene under `Assets/Scenes/`, and press Play. WASD to move, mouse to look, left-click to shoot.
+
+## 🎓 What I learned
+
+Core FPS mechanics from scratch — mouse-look with clamped rotation, camera-based raycasting, physics-driven projectiles — Unity's NavMesh pathfinding for enemy AI, the singleton pattern for state that needs to survive across a single play session (the zombie counter), and structuring a multi-scene game flow (menu → levels → game over).
+
+## 🚀 Status
+
+Built during studies at SPŠE Ječná — a school project / prototype, not a polished shipped game. Uses Unity Asset Store packs for art (skybox, character models) rather than original assets.
+
+<!-- FOOTER -->
 ---
-
-## 1. Úvod
-
-**Zombie Shooter** je akční hra plná napětí, odehrávající se v městském prostředí, kde hráči musí přežít vlny zombíků. Hra je rozdělena do několika úrovní, přičemž každá další úroveň je náročnější díky vyššímu počtu a rychlejším pohybům zombíků. Tento dokument popisuje základní mechaniky, ovládání a funkce hry.
-
-## 2. Přehled hry
-
-### 2.1 Žánr
-Akční, Střílečka, Survival
-
-### 2.2 Platforma
-PC
-
-### 2.3 Cílová skupina
-Teenageři a dospělí, kteří si užívají rychlé střílečky a výzvy v přežití.
-
-### 2.4 Cíl hry
-Hlavním cílem hráče je přežít v jednotlivých úrovních likvidací vln zombíků pomocí různých zbraní a efektivního spravování zdrojů.
-
----
-
-## 3. Herní mechaniky
-
-### 3.1 Ovládání
-- **Pohyb:** 
-  - `W` - Pohyb vpřed
-  - `A` - Pohyb vlevo
-  - `S` - Pohyb vzad
-  - `D` - Pohyb vpravo
-  - `Mezerník` - Skok
-
-- **Svítilna:**
-  - `F` - Zapnout/Vypnout svítilnu (výdrž 30 sekund, postupně se vybíjí)
-
-- **Zbraň:**
-  - **Míření a střelba:** 
-    - Ovládání myší nebo touchpadem
-    - Levé tlačítko pro střelbu
-
-### 3.2 Zbraně a přebíjení
-- Zbraň se používá k likvidaci zombíků.
-- **Automatické přebíjení:**
-  - Zbraň se automaticky přebíjí, když dojde munice.
-  - Během přebíjení je krátká prodleva, během které hráč nemůže střílet.
-
-### 3.3 Mechanika svítilny
-- Svítilna je klíčová pro viditelnost v tmavých oblastech.
-- Má omezenou životnost baterie 30 sekund.
-- Baterie se postupně vybíjí, což vyžaduje strategické využívání.
-
-### 3.4 Postup úrovněmi
-- Hra je strukturována do úrovní.
-- Jak hráč postupuje, počet zombíků se zvyšuje a jejich rychlost a agresivita narůstá.
-
----
-
-## 4. Návrh úrovní
-
-### 4.1 Prostředí
-- Hra se odehrává v městském bloku, obsahujícím městské prvky jako budovy, ulice a uličky.
-- Každá úroveň představuje nové části města, což činí průzkum nezbytným pro přežití.
-
-### 4.2 Zombíci
-- Zombíci se objevují v rostoucím počtu, jak hráč postupuje úrovněmi.
-- Projevují různé rychlosti a vzory útoků, což vyžaduje, aby hráči neustále přizpůsobovali své strategie.
-
----
-
-## 5. Grafický a zvukový design
-
-### 5.1 Vizuální styl
-- Realistické, tmavé a drsné městské prostředí.
-- Detailní modely postav a zombíků s animacemi.
-
-### 5.2 Zvukové efekty a hudba
-- Pohlcující zvukové efekty pro střelbu, přebíjení a pohyby zombíků.
-- Napínavá hudba na pozadí, která zvyšuje atmosféru a intenzitu hry.
-
----
-
-## 6. Technické specifikace
-
-### 6.1 Herní engine
-- Hra byla vyvinuta pomocí Unity 2022.3.5F1, což podporuje požadovanou grafiku a mechaniky.
-
-### 6.2 Výkon
-- Hra byla optimalizována pro plynulý výkon na středně výkonných počítačích.
-
-### 6.3 Uživatelské rozhraní
-- Intuitivní a minimalistické uživatelské rozhraní pro snadnou navigaci a ovládání.
-
----
-
-## 7. Závěr
-
-**Zombie Shooter** má za cíl poskytnout poutavý a náročný zážitek pro hráče, kteří si užívají akční střílečky a výzvy v přežití. Díky dynamické hratelnosti, strategickému spravování zdrojů a stupňující se obtížnosti hra slibuje, že hráče udrží na kraji sedadla.
-
----
-
-## 8. Příloha
-
-### 8.1 Reference
-- Herní mechaniky a ovládací schémata inspirována populárními akčními survival hrami.
-- Vizualizace a zvukový design vycházejí z her s městskou tématikou.
-
----
-
-**Patrick Dyntr**
-
-*SPŠE Ječná*
-
-*Závěrečná práce z předmětu MVH*
-
----
-
-## 9. Aktuální stav hry
-
-Hra je již hotová a byla vytvořena v Unity 2022.3.5F1 na Macu. Je potřeba vytvořit build pro distribuci. Ve hře je zahrnut zvuk pozadí a zvuk střelby.
+<p align="center">
+  <sub>Part of <a href="https://github.com/dyntr">Patrick Dyntr's</a> portfolio · Built by <a href="https://github.com/dyntr">@dyntr</a></sub>
+</p>
